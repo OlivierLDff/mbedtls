@@ -1,9 +1,13 @@
-add_executable(hello hello.c)
-target_link_libraries(hello mbedtls)
+add_executable(${MBEDTLS_EXAMPLES_PREFIX_}hello hello.c)
+target_link_libraries(${MBEDTLS_EXAMPLES_PREFIX_}hello mbedtls)
+SET_TARGET_PROPERTIES(${MBEDTLS_EXAMPLES_PREFIX_}hello PROPERTIES FOLDER ${MBEDTLS_FOLDER_PREFIX}/Examples/hash)
 
-add_executable(generic_sum generic_sum.c)
-target_link_libraries(generic_sum mbedtls)
+add_executable(${MBEDTLS_EXAMPLES_PREFIX_}generic_sum generic_sum.c)
+target_link_libraries(${MBEDTLS_EXAMPLES_PREFIX_}generic_sum mbedtls)
+SET_TARGET_PROPERTIES(${MBEDTLS_EXAMPLES_PREFIX_}generic_sum PROPERTIES FOLDER ${MBEDTLS_FOLDER_PREFIX}/Examples/hash)
 
-install(TARGETS hello generic_sum
+IF(MBEDTLS_ENABLE_INSTALL)
+install(TARGETS ${MBEDTLS_EXAMPLES_PREFIX_}hello ${MBEDTLS_EXAMPLES_PREFIX_}generic_sum
         DESTINATION "bin"
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+ENDIF(MBEDTLS_ENABLE_INSTALL)

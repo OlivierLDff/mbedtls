@@ -1,6 +1,11 @@
-option(USE_STATIC_MBEDTLS_LIBRARY "Build mbed TLS static library." ON)
-option(USE_SHARED_MBEDTLS_LIBRARY "Build mbed TLS shared library." OFF)
-option(LINK_WITH_PTHREAD "Explicitly link mbed TLS library to pthread." OFF)
+IF(MBEDTLS_BUILD_SHARED)
+    option(USE_STATIC_MBEDTLS_LIBRARY "Build mbed TLS static library." OFF)
+    option(USE_SHARED_MBEDTLS_LIBRARY "Build mbed TLS shared library." ON)
+ELSE(MBEDTLS_BUILD_SHARED)
+    option(USE_STATIC_MBEDTLS_LIBRARY "Build mbed TLS static library." ON)
+    option(USE_SHARED_MBEDTLS_LIBRARY "Build mbed TLS shared library." OFF)
+ENDIF(MBEDTLS_BUILD_SHARED)
+option(LINK_WITH_PTHREAD "Explicitly link mbed TLS library to pthread." ${MBEDTLS_LINK_WITH_PTHREAD})
 
 set(src_crypto
     aes.c
@@ -153,6 +158,7 @@ if(USE_STATIC_MBEDTLS_LIBRARY)
     target_include_directories(${mbedx509_static_target}
         PUBLIC ${MBEDTLS_DIR}/include/
         PUBLIC ${MBEDTLS_DIR}/crypto/include/)
+    SET_TARGET_PROPERTIES(${mbedx509_static_target} PROPERTIES FOLDER ${MBEDTLS_FOLDER_PREFIX})
 
     add_library(${mbedtls_static_target} STATIC ${src_tls})
     set_target_properties(${mbedtls_static_target} PROPERTIES OUTPUT_NAME mbedtls)
@@ -161,11 +167,13 @@ if(USE_STATIC_MBEDTLS_LIBRARY)
         PUBLIC ${MBEDTLS_DIR}/include/
         PUBLIC ${MBEDTLS_DIR}/crypto/include/
         )
+    SET_TARGET_PROPERTIES(${mbedtls_static_target} PROPERTIES FOLDER ${MBEDTLS_FOLDER_PREFIX})
 
-
-    install(TARGETS ${mbedtls_static_target} ${mbedx509_static_target}
+    IF(MBEDTLS_ENABLE_INSTALL)
+        install(TARGETS ${mbedtls_static_target} ${mbedx509_static_target}
             DESTINATION ${LIB_INSTALL_DIR}
             PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+    ENDIF(MBEDTLS_ENABLE_INSTALL)
 
 endif(USE_STATIC_MBEDTLS_LIBRARY)
 
@@ -177,6 +185,7 @@ if(USE_SHARED_MBEDTLS_LIBRARY)
     target_include_directories(mbedx509
         PUBLIC ${MBEDTLS_DIR}/include/
         PUBLIC ${MBEDTLS_DIR}/crypto/include/)
+    SET_TARGET_PROPERTIES(mbedx509 PROPERTIES FOLDER ${MBEDTLS_FOLDER_PREFIX})
 
     add_library(mbedtls SHARED ${src_tls})
     set_target_properties(mbedtls PROPERTIES VERSION 2.18.0 SOVERSION 13)
@@ -184,14 +193,19 @@ if(USE_SHARED_MBEDTLS_LIBRARY)
     target_include_directories(mbedtls
         PUBLIC ${MBEDTLS_DIR}/include/
         PUBLIC ${MBEDTLS_DIR}/crypto/include/)
+    SET_TARGET_PROPERTIES(mbedtls PROPERTIES FOLDER ${MBEDTLS_FOLDER_PREFIX})
 
-      install(TARGETS mbedtls mbedx509
+    IF(MBEDTLS_ENABLE_INSTALL)
+        install(TARGETS mbedtls mbedx509
               DESTINATION ${LIB_INSTALL_DIR}
               PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+    ENDIF(MBEDTLS_ENABLE_INSTALL)
 
 endif(USE_SHARED_MBEDTLS_LIBRARY)
 
-add_custom_target(lib DEPENDS mbedx509 mbedtls)
+add_custom_target(${MBEDTLS_EXAMPLES_PREFIX_}lib DEPENDS mbedx509 mbedtls)
 if(USE_STATIC_MBEDTLS_LIBRARY AND USE_SHARED_MBEDTLS_LIBRARY)
-    add_dependencies(lib mbedx509_static mbedtls_static)
+    add_dependencies(${MBEDTLS_EXAMPLES_PREFIX_}lib mbedx509_static mbedtls_static)
 endif()
+
+SET_TARGET_PROPERTIES(${MBEDTLS_EXAMPLES_PREFIX_}lib PROPERTIES FOLDER ${MBEDTLS_FOLDER_PREFIX}/Utils)

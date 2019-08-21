@@ -40,13 +40,16 @@ function(add_test_suite suite_name)
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_test_code.py mbedtls ${CMAKE_CURRENT_SOURCE_DIR}/suites/helpers.function ${CMAKE_CURRENT_SOURCE_DIR}/suites/main_test.function ${CMAKE_CURRENT_SOURCE_DIR}/suites/host_test.function ${CMAKE_CURRENT_SOURCE_DIR}/suites/test_suite_${suite_name}.function ${CMAKE_CURRENT_SOURCE_DIR}/suites/test_suite_${data_name}.data
     )
 
+    set(exe_name ${MBEDTLS_TESTS_PREFIX_}test_suite_${data_name})
+
     include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-    add_executable(test_suite_${data_name} test_suite_${data_name}.c)
-    target_link_libraries(test_suite_${data_name} ${libs})
+    add_executable(${exe_name} test_suite_${data_name}.c)
+    SET_TARGET_PROPERTIES(${exe_name} PROPERTIES FOLDER ${MBEDTLS_FOLDER_PREFIX}/Tests)
+    target_link_libraries(${exe_name} ${libs})
     if(${data_name} MATCHES ${SKIP_TEST_SUITES_REGEX})
         message(STATUS "The test suite ${data_name} will not be executed.")
     else()
-        add_test(${data_name}-suite test_suite_${data_name} --verbose)
+        add_test(${MBEDTLS_TESTS_PREFIX_}${data_name}-suite ${exe_name} --verbose)
     endif()
 endfunction(add_test_suite)
 

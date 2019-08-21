@@ -1,9 +1,13 @@
-add_executable(aescrypt2 aescrypt2.c)
-target_link_libraries(aescrypt2 mbedtls)
+add_executable(${MBEDTLS_EXAMPLES_PREFIX_}aescrypt2 aescrypt2.c)
+target_link_libraries(${MBEDTLS_EXAMPLES_PREFIX_}aescrypt2 ${MBEDTLS_TARGET})
+SET_TARGET_PROPERTIES(${MBEDTLS_EXAMPLES_PREFIX_}aescrypt2 PROPERTIES FOLDER ${MBEDTLS_FOLDER_PREFIX}/Examples/aes)
 
-add_executable(crypt_and_hash crypt_and_hash.c)
-target_link_libraries(crypt_and_hash mbedtls)
+add_executable(${MBEDTLS_EXAMPLES_PREFIX_}crypt_and_hash crypt_and_hash.c)
+target_link_libraries(${MBEDTLS_EXAMPLES_PREFIX_}crypt_and_hash ${MBEDTLS_TARGET})
+SET_TARGET_PROPERTIES(${MBEDTLS_EXAMPLES_PREFIX_}crypt_and_hash PROPERTIES FOLDER ${MBEDTLS_FOLDER_PREFIX}/Examples/aes)
 
-install(TARGETS aescrypt2 crypt_and_hash
-        DESTINATION "bin"
-        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+IF(MBEDTLS_ENABLE_INSTALL)
+    install(TARGETS ${MBEDTLS_EXAMPLES_PREFIX_}aescrypt2 ${MBEDTLS_EXAMPLES_PREFIX_}crypt_and_hash
+            DESTINATION "bin"
+            PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+ENDIF(MBEDTLS_ENABLE_INSTALL)

@@ -1,21 +1,134 @@
-cmake_minimum_required(VERSION 2.6)
-if(TEST_CPP)
-    project("mbed TLS" C CXX)
-else()
-    project("mbed TLS" C)
-endif()
+# ┌──────────────────────────────────────────────────────────────────┐
+# │                       CMAKE PROPERTIES                           │
+# └──────────────────────────────────────────────────────────────────┘
 
-set(MBEDTLS_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+cmake_minimum_required(VERSION 3.11)
+
+# DEPENDANCIES
+
+SET( MBEDCRYPTO_REPOSITORY "https://github.com/OlivierLDff/mbed-crypto" CACHE STRING "Repository of mbed-crypto" )
+SET( MBEDCRYPTO_TAG "mbedcrypto-1.1.1-Superbuild" CACHE STRING "Git tag/branch of mbed-crypto" )
+
+# ┌──────────────────────────────────────────────────────────────────┐
+# │                       PROJECT SETTINGS                           │
+# └──────────────────────────────────────────────────────────────────┘
+
+# General
+SET( MBEDTLS_PROJECT "mbedtls" CACHE STRING "Project Name")
+SET( MBEDTLS_TARGET "${MBEDTLS_PROJECT}" CACHE STRING "mbedtls library name" )
+SET( MBEDTLS_VERSION "2.18.1" CACHE STRING "mbedtls current version, this is only decorative and will not configure any files" FORCE )
+SET( MBEDTLS_BUILD_SHARED OFF CACHE BOOL "Build as a shared library (ON) or as static (OFF)" )
+SET( MBEDTLS_FOLDER_PREFIX ${MBEDTLS_TARGET} CACHE STRING "Prefix folder for all mbedtls generated targets in generated project (only decorative)" )
+SET( MBEDTLS_UNSAFE_BUILD OFF CACHE BOOL "Allow unsafe builds. These builds ARE NOT SECURE" )
+SET( MBEDTLS_LINK_WITH_PTHREAD OFF CACHE BOOL "Explicitly link mbed crypto library to pthread." )
+
+# Tests
+SET( MBEDTLS_ENABLE_TESTS OFF CACHE BOOL "Create or not a target for test (compatible with CTests)" )
+SET( MBEDTLS_TESTS_PREFIX ${MBEDTLS_TARGET} CACHE STRING "Prefix for all mbedtls tests" )
+IF(NOT ${MBEDTLS_TESTS_PREFIX} STREQUAL "")
+    SET( MBEDTLS_TESTS_PREFIX_ "${MBEDTLS_TESTS_PREFIX}_" )
+ELSE(NOT ${MBEDTLS_TESTS_PREFIX} STREQUAL "")
+    SET( MBEDTLS_TESTS_PREFIX_ "" )
+ENDIF(NOT ${MBEDTLS_TESTS_PREFIX} STREQUAL "")
+
+# Examples
+SET( MBEDTLS_ENABLE_EXAMPLES OFF CACHE BOOL "Create or not a target for examples" )
+SET( MBEDTLS_EXAMPLES_PREFIX ${MBEDTLS_TARGET} CACHE STRING "Prefix for all mbedtls tests" )
+IF(NOT ${MBEDTLS_EXAMPLES_PREFIX} STREQUAL "")
+    SET( MBEDTLS_EXAMPLES_PREFIX_ "${MBEDTLS_EXAMPLES_PREFIX}_" )
+ELSE(NOT ${MBEDTLS_EXAMPLES_PREFIX} STREQUAL "")
+    SET( MBEDTLS_EXAMPLES_PREFIX_ "" )
+ENDIF(NOT ${MBEDTLS_EXAMPLES_PREFIX} STREQUAL "")
+
+# Install
+SET( MBEDTLS_ENABLE_INSTALL OFF CACHE BOOL "Create or not a target for install" )
+SET( MBEDTLS_INSTALL_PREFIX ${MBEDTLS_TARGET} CACHE STRING "Prefix for all mbedtls headers in the install folder" )
+
+if(TEST_CPP)
+    project(${MBEDTLS_PROJECT} LANGUAGES C CXX VERSION ${MBEDTLS_VERSION})
+else()
+    project(${MBEDTLS_PROJECT} LANGUAGES C VERSION ${MBEDTLS_VERSION})
+endif()
+SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 
 option(USE_PKCS11_HELPER_LIBRARY "Build mbed TLS with the pkcs11-helper library." OFF)
 option(ENABLE_ZLIB_SUPPORT "Build mbed TLS with zlib library." OFF)
 
-option(ENABLE_PROGRAMS "Build mbed TLS programs." ON)
+option(ENABLE_PROGRAMS "Build mbed TLS programs." ${MBEDTLS_ENABLE_EXAMPLES})
 
-option(UNSAFE_BUILD "Allow unsafe builds. These builds ARE NOT SECURE." OFF)
+option(UNSAFE_BUILD "Allow unsafe builds. These builds ARE NOT SECURE." ${MBEDTLS_UNSAFE_BUILD})
 
 # export the submodule flag so that crypto knows it's being built as a submodule
-set( USE_CRYPTO_SUBMODULE ON )
+if(${CMAKE_VERSION} VERSION_LESS "3.11")
+    MESSAGE(STATUS "FetchContent not available in your CMake version (min 3.11). It is required for you to use git submodules")
+    set( USE_CRYPTO_SUBMODULE ON CACHE BOOL "Are we building using submodule or FetchContent" )
+else(${CMAKE_VERSION} VERSION_LESS "3.11")
+    set( USE_CRYPTO_SUBMODULE OFF CACHE BOOL "Are we building using submodule or FetchContent" )
+endif(${CMAKE_VERSION} VERSION_LESS "3.11")
+
+# LOG OPTIONS
+
+MESSAGE("---------------- MBEDTLS OPTIONS. ----------------")
+
+#General
+MESSAGE(STATUS "MBEDTLS_PROJECT          : " ${MBEDTLS_PROJECT})
+MESSAGE(STATUS "MBEDTLS_VERSION          : " ${MBEDTLS_VERSION})
+MESSAGE(STATUS "MBEDTLS_TARGET           : " ${MBEDTLS_TARGET})
+MESSAGE(STATUS "MBEDTLS_BUILD_SHARED     : " ${MBEDTLS_BUILD_SHARED})
+MESSAGE(STATUS "MBEDTLS_FOLDER_PREFIX    : " ${MBEDTLS_FOLDER_PREFIX})
+MESSAGE(STATUS "MBEDTLS_UNSAFE_BUILD     : " ${MBEDTLS_UNSAFE_BUILD})
+
+# Tests
+MESSAGE(STATUS "MBEDTLS_ENABLE_TESTS     : " ${MBEDTLS_ENABLE_TESTS})
+IF(MBEDTLS_ENABLE_TESTS)
+MESSAGE(STATUS "MBEDTLS_TESTS_PREFIX     : " ${MBEDTLS_TESTS_PREFIX})
+ENDIF(MBEDTLS_ENABLE_TESTS)
+
+# Examples
+MESSAGE(STATUS "MBEDTLS_ENABLE_EXAMPLES  : " ${MBEDTLS_ENABLE_EXAMPLES})
+IF(MBEDTLS_ENABLE_EXAMPLES)
+MESSAGE(STATUS "MBEDTLS_EXAMPLES_PREFIX  : " ${MBEDTLS_EXAMPLES_PREFIX})
+ENDIF(MBEDTLS_ENABLE_EXAMPLES)
+
+# Install
+MESSAGE(STATUS "MBEDTLS_ENABLE_INSTALL   : " ${MBEDTLS_ENABLE_INSTALL})
+IF(MBEDTLS_ENABLE_INSTALL)
+MESSAGE(STATUS "MBEDTLS_INSTALL_PREFIX   : " ${MBEDTLS_INSTALL_PREFIX})
+ENDIF(MBEDTLS_ENABLE_INSTALL)
+
+MESSAGE("---------------- DONE WITH OPTIONS. -----------------")
+MESSAGE("                                                     ")
+
+# ┌──────────────────────────────────────────────────────────────────┐
+# │                       DEPENDENCIES                               │
+# └──────────────────────────────────────────────────────────────────┘
+
+IF(NOT USE_CRYPTO_SUBMODULE)
+
+include(FetchContent)
+
+    # mbedcrypto
+    FetchContent_Declare(
+        mbedcrypto
+        GIT_REPOSITORY ${MBEDCRYPTO_REPOSITORY}
+        GIT_TAG        ${MBEDCRYPTO_TAG}
+    )
+
+    SET(MBEDCRYPTO_FOLDER_PREFIX "Dependencies/mbedcrypto" CACHE STRING "")
+
+    SET(FETCHCONTENT_UPDATES_DISCONNECTED ON)
+    SET(FETCHCONTENT_QUIET OFF)
+
+    SET(MBEDTLS_BUILD_SHARED ${MBEDCRYPTO_BUILD_SHARED})
+    SET(MBEDTLS_LINK_WITH_PTHREAD ${MBEDCRYPTO_LINK_WITH_PTHREAD})
+    SET(MBEDTLS_UNSAFE_BUILD ${MBEDCRYPTO_UNSAFE_BUILD})
+
+    # Make all dependencies avaiables
+    FetchContent_MakeAvailable(mbedcrypto)
+
+ENDIF(NOT USE_CRYPTO_SUBMODULE)
+
+set(MBEDTLS_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 string(REGEX MATCH "Clang" CMAKE_COMPILER_IS_CLANG "${CMAKE_C_COMPILER_ID}")
 string(REGEX MATCH "GNU" CMAKE_COMPILER_IS_GNU "${CMAKE_C_COMPILER_ID}")
@@ -23,11 +136,7 @@ string(REGEX MATCH "IAR" CMAKE_COMPILER_IS_IAR "${CMAKE_C_COMPILER_ID}")
 string(REGEX MATCH "MSVC" CMAKE_COMPILER_IS_MSVC "${CMAKE_C_COMPILER_ID}")
 
 # the test suites currently have compile errors with MSVC
-if(CMAKE_COMPILER_IS_MSVC)
-    option(ENABLE_TESTING "Build mbed TLS tests." OFF)
-else()
-    option(ENABLE_TESTING "Build mbed TLS tests." ON)
-endif()
+option(ENABLE_TESTING "Build mbed TLS tests." ${MBEDTLS_ENABLE_TESTS})
 
 # Warning string - created as a list for compatibility with CMake 2.8
 set(WARNING_BORDER "*******************************************************\n")
@@ -188,34 +297,40 @@ endif(ENABLE_ZLIB_SUPPORT)
 
 add_subdirectory(library)
 add_subdirectory(include)
-add_subdirectory(crypto/library)
-add_subdirectory(crypto/include)
+IF(USE_CRYPTO_SUBMODULE)
+    add_subdirectory(crypto/library)
+    add_subdirectory(crypto/include)
+ENDIF(USE_CRYPTO_SUBMODULE)
 
-if(ENABLE_PROGRAMS)
+if(ENABLE_PROGRAMS OR MBEDTLS_ENABLE_EXAMPLES)
     add_subdirectory(programs)
 endif()
 
-ADD_CUSTOM_TARGET(apidoc
+ADD_CUSTOM_TARGET(${MBEDTLS_EXAMPLES_PREFIX_}apidoc
     COMMAND doxygen mbedtls.doxyfile
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/doxygen)
+SET_TARGET_PROPERTIES(${MBEDTLS_EXAMPLES_PREFIX_}apidoc PROPERTIES FOLDER ${MBEDTLS_FOLDER_PREFIX}/Doc)
 
-if(ENABLE_TESTING)
+if(ENABLE_TESTING OR MBEDTLS_ENABLE_TESTS)
     enable_testing()
 
     add_subdirectory(tests)
-    add_subdirectory(crypto/tests)
+    IF(USE_CRYPTO_SUBMODULE)
+        add_subdirectory(crypto/tests)
+    ENDIF(USE_CRYPTO_SUBMODULE)
 
     # additional convenience targets for Unix only
     if(UNIX)
 
-        ADD_CUSTOM_TARGET(covtest
+        ADD_CUSTOM_TARGET(${MBEDTLS_TESTS_PREFIX_}covtest
             COMMAND make test
             COMMAND programs/test/selftest
             COMMAND tests/compat.sh
             COMMAND tests/ssl-opt.sh
         )
+        SET_TARGET_PROPERTIES(${MBEDTLS_TESTS_PREFIX_}covtest PROPERTIES FOLDER ${MBEDTLS_FOLDER_PREFIX}/Tests)
 
-        ADD_CUSTOM_TARGET(lcov
+        ADD_CUSTOM_TARGET(${MBEDTLS_TESTS_PREFIX_}lcov
             COMMAND rm -rf Coverage
             COMMAND lcov --capture --initial --directory library/CMakeFiles/mbedtls.dir -o files.info
             COMMAND lcov --capture --directory library/CMakeFiles/mbedtls.dir -o tests.info
@@ -225,14 +340,16 @@ if(ENABLE_TESTING)
             COMMAND genhtml --title "mbed TLS" --description-file descriptions --keep-descriptions --legend --no-branch-coverage -o Coverage final.info
             COMMAND rm -f files.info tests.info all.info final.info descriptions
         )
+        SET_TARGET_PROPERTIES(${MBEDTLS_TESTS_PREFIX_}lcov PROPERTIES FOLDER ${MBEDTLS_FOLDER_PREFIX}/Tests)
 
-        ADD_CUSTOM_TARGET(memcheck
+        ADD_CUSTOM_TARGET(${MBEDTLS_TESTS_PREFIX_}memcheck
             COMMAND sed -i.bak s+/usr/bin/valgrind+`which valgrind`+ DartConfiguration.tcl
             COMMAND ctest -O memcheck.log -D ExperimentalMemCheck
             COMMAND tail -n1 memcheck.log | grep 'Memory checking results:' > /dev/null
             COMMAND rm -f memcheck.log
             COMMAND mv DartConfiguration.tcl.bak DartConfiguration.tcl
         )
+        SET_TARGET_PROPERTIES(${MBEDTLS_TESTS_PREFIX_}memcheck PROPERTIES FOLDER ${MBEDTLS_FOLDER_PREFIX}/Tests)
     endif(UNIX)
 
     # Make scripts needed for testing available in an out-of-source build.

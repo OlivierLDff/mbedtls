@@ -10,21 +10,28 @@ if(ENABLE_ZLIB_SUPPORT)
     set(libs ${libs} ${ZLIB_LIBRARIES})
 endif(ENABLE_ZLIB_SUPPORT)
 
-add_executable(cert_app cert_app.c)
-target_link_libraries(cert_app ${libs})
+add_executable(${MBEDTLS_EXAMPLES_PREFIX_}cert_app cert_app.c)
+target_link_libraries(${MBEDTLS_EXAMPLES_PREFIX_}cert_app ${libs})
+SET_TARGET_PROPERTIES(${MBEDTLS_EXAMPLES_PREFIX_}cert_app PROPERTIES FOLDER ${MBEDTLS_FOLDER_PREFIX}/Examples/x509)
 
-add_executable(crl_app crl_app.c)
-target_link_libraries(crl_app ${libs})
+add_executable(${MBEDTLS_EXAMPLES_PREFIX_}crl_app crl_app.c)
+target_link_libraries(${MBEDTLS_EXAMPLES_PREFIX_}crl_app ${libs})
+SET_TARGET_PROPERTIES(${MBEDTLS_EXAMPLES_PREFIX_}crl_app PROPERTIES FOLDER ${MBEDTLS_FOLDER_PREFIX}/Examples/x509)
 
-add_executable(req_app req_app.c)
-target_link_libraries(req_app ${libs})
+add_executable(${MBEDTLS_EXAMPLES_PREFIX_}req_app req_app.c)
+target_link_libraries(${MBEDTLS_EXAMPLES_PREFIX_}req_app ${libs})
+SET_TARGET_PROPERTIES(${MBEDTLS_EXAMPLES_PREFIX_}req_app PROPERTIES FOLDER ${MBEDTLS_FOLDER_PREFIX}/Examples/x509)
 
-add_executable(cert_req cert_req.c)
-target_link_libraries(cert_req ${libs})
+add_executable(${MBEDTLS_EXAMPLES_PREFIX_}cert_req cert_req.c)
+target_link_libraries(${MBEDTLS_EXAMPLES_PREFIX_}cert_req ${libs})
+SET_TARGET_PROPERTIES(${MBEDTLS_EXAMPLES_PREFIX_}cert_req PROPERTIES FOLDER ${MBEDTLS_FOLDER_PREFIX}/Examples/x509)
 
-add_executable(cert_write cert_write.c)
-target_link_libraries(cert_write ${libs})
+add_executable(${MBEDTLS_EXAMPLES_PREFIX_}cert_write cert_write.c)
+target_link_libraries(${MBEDTLS_EXAMPLES_PREFIX_}cert_write ${libs})
+SET_TARGET_PROPERTIES(${MBEDTLS_EXAMPLES_PREFIX_}cert_write PROPERTIES FOLDER ${MBEDTLS_FOLDER_PREFIX}/Examples/x509)
 
-install(TARGETS cert_app crl_app req_app cert_req cert_write
+IF(MBEDTLS_ENABLE_INSTALL)
+install(TARGETS ${MBEDTLS_EXAMPLES_PREFIX_}cert_app ${MBEDTLS_EXAMPLES_PREFIX_}crl_app ${MBEDTLS_EXAMPLES_PREFIX_}req_app ${MBEDTLS_EXAMPLES_PREFIX_}cert_req ${MBEDTLS_EXAMPLES_PREFIX_}cert_write
         DESTINATION "bin"
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+ENDIF(MBEDTLS_ENABLE_INSTALL)

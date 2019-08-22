@@ -16,6 +16,7 @@ SET( MBEDTLS_BUILD_SHARED OFF CACHE BOOL "Build as a shared library (ON) or as s
 SET( MBEDTLS_FOLDER_PREFIX ${MBEDTLS_TARGET} CACHE STRING "Prefix folder for all mbedtls generated targets in generated project (only decorative)" )
 SET( MBEDTLS_UNSAFE_BUILD OFF CACHE BOOL "Allow unsafe builds. These builds ARE NOT SECURE" )
 SET( MBEDTLS_LINK_WITH_PTHREAD OFF CACHE BOOL "Explicitly link mbed crypto library to pthread." )
+SET( USE_CRYPTO_SUBMODULE ON CACHE BOOL "Explicitly link mbed crypto library to pthread." FORCE )
 
 # Tests
 SET( MBEDTLS_ENABLE_TESTS OFF CACHE BOOL "Create or not a target for test (compatible with CTests)" )

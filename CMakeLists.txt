@@ -4,11 +4,6 @@
 
 cmake_minimum_required(VERSION 3.11)
 
-# DEPENDANCIES
-
-SET( MBEDCRYPTO_REPOSITORY "https://github.com/OlivierLDff/mbed-crypto" CACHE STRING "Repository of mbed-crypto" )
-SET( MBEDCRYPTO_TAG "mbedcrypto-1.1.1-Superbuild" CACHE STRING "Git tag/branch of mbed-crypto" )
-
 # ┌──────────────────────────────────────────────────────────────────┐
 # │                       PROJECT SETTINGS                           │
 # └──────────────────────────────────────────────────────────────────┘
@@ -99,36 +94,77 @@ ENDIF(MBEDTLS_ENABLE_INSTALL)
 MESSAGE("---------------- DONE WITH OPTIONS. -----------------")
 MESSAGE("                                                     ")
 
+# General
+SET( MBEDCRYPTO_PROJECT "mbedcrypto" CACHE STRING "Project Name")
+SET( MBEDCRYPTO_TARGET "${MBEDCRYPTO_PROJECT}" CACHE STRING "mbedcrypto library name" )
+SET( MBEDCRYPTO_VERSION "1.1.1" CACHE STRING "mbedcrypto current version, this is only decorative and will not configure any files" FORCE )
+SET( MBEDCRYPTO_BUILD_SHARED OFF CACHE BOOL "Build as a shared library (ON) or as static (OFF)" )
+SET( MBEDCRYPTO_FOLDER_PREFIX ${MBEDCRYPTO_TARGET} CACHE STRING "Prefix folder for all mbedcrypto generated targets in generated project (only decorative)" )
+SET( MBEDCRYPTO_UNSAFE_BUILD OFF CACHE BOOL "Allow unsafe builds. These builds ARE NOT SECURE" )
+SET( MBEDCRYPTO_LINK_WITH_PTHREAD OFF CACHE BOOL "Explicitly link mbed crypto library to pthread." )
+
+# Tests
+SET( MBEDCRYPTO_ENABLE_TESTS OFF CACHE BOOL "Create or not a target for test (compatible with CTests)" )
+SET( MBEDCRYPTO_TESTS_PREFIX ${MBEDCRYPTO_TARGET} CACHE STRING "Prefix for all mbedcrypto tests" )
+IF(NOT ${MBEDCRYPTO_TESTS_PREFIX} STREQUAL "")
+    SET( MBEDCRYPTO_TESTS_PREFIX_ "${MBEDCRYPTO_TESTS_PREFIX}_" )
+ELSE(NOT ${MBEDCRYPTO_TESTS_PREFIX} STREQUAL "")
+    SET( MBEDCRYPTO_TESTS_PREFIX_ "" )
+ENDIF(NOT ${MBEDCRYPTO_TESTS_PREFIX} STREQUAL "")
+
+# Examples
+SET( MBEDCRYPTO_ENABLE_EXAMPLES OFF CACHE BOOL "Create or not a target for examples" )
+SET( MBEDCRYPTO_EXAMPLES_PREFIX ${MBEDCRYPTO_TARGET} CACHE STRING "Prefix for all mbedcrypto tests" )
+IF(NOT ${MBEDCRYPTO_EXAMPLES_PREFIX} STREQUAL "")
+    SET( MBEDCRYPTO_EXAMPLES_PREFIX_ "${MBEDCRYPTO_EXAMPLES_PREFIX}_" )
+ELSE(NOT ${MBEDCRYPTO_EXAMPLES_PREFIX} STREQUAL "")
+    SET( MBEDCRYPTO_EXAMPLES_PREFIX_ "" )
+ENDIF(NOT ${MBEDCRYPTO_EXAMPLES_PREFIX} STREQUAL "")
+
+# Install
+SET( MBEDCRYPTO_ENABLE_INSTALL OFF CACHE BOOL "Create or not a target for install" )
+SET( MBEDCRYPTO_INSTALL_PREFIX ${MBEDCRYPTO_TARGET} CACHE STRING "Prefix for all mbedcrypto headers in the install folder" )
+
+# LOG OPTIONS
+
+MESSAGE("---------------- MBEDCRYPTO OPTIONS. ----------------")
+
+#General
+MESSAGE(STATUS "MBEDCRYPTO_PROJECT          : " ${MBEDCRYPTO_PROJECT})
+MESSAGE(STATUS "MBEDCRYPTO_VERSION          : " ${MBEDCRYPTO_VERSION})
+MESSAGE(STATUS "MBEDCRYPTO_TARGET           : " ${MBEDCRYPTO_TARGET})
+MESSAGE(STATUS "MBEDTLS_DIR                 : " ${MBEDTLS_DIR})
+MESSAGE(STATUS "MBEDCRYPTO_BUILD_SHARED     : " ${MBEDCRYPTO_BUILD_SHARED})
+MESSAGE(STATUS "MBEDCRYPTO_FOLDER_PREFIX    : " ${MBEDCRYPTO_FOLDER_PREFIX})
+MESSAGE(STATUS "MBEDCRYPTO_UNSAFE_BUILD     : " ${MBEDCRYPTO_UNSAFE_BUILD})
+
+# Tests
+MESSAGE(STATUS "MBEDCRYPTO_ENABLE_TESTS     : " ${MBEDCRYPTO_ENABLE_TESTS})
+IF(MBEDCRYPTO_ENABLE_TESTS)
+MESSAGE(STATUS "MBEDCRYPTO_TESTS_PREFIX     : " ${MBEDCRYPTO_TESTS_PREFIX})
+ENDIF(MBEDCRYPTO_ENABLE_TESTS)
+
+# Examples
+MESSAGE(STATUS "MBEDCRYPTO_ENABLE_EXAMPLES  : " ${MBEDCRYPTO_ENABLE_EXAMPLES})
+IF(MBEDCRYPTO_ENABLE_EXAMPLES)
+MESSAGE(STATUS "MBEDCRYPTO_EXAMPLES_PREFIX  : " ${MBEDCRYPTO_EXAMPLES_PREFIX})
+ENDIF(MBEDCRYPTO_ENABLE_EXAMPLES)
+
+# Install
+MESSAGE(STATUS "MBEDCRYPTO_ENABLE_INSTALL   : " ${MBEDCRYPTO_ENABLE_INSTALL})
+IF(MBEDCRYPTO_ENABLE_INSTALL)
+MESSAGE(STATUS "MBEDCRYPTO_INSTALL_PREFIX   : " ${MBEDCRYPTO_INSTALL_PREFIX})
+ENDIF(MBEDCRYPTO_ENABLE_INSTALL)
+
+MESSAGE("---------------- DONE WITH OPTIONS. -----------------")
+MESSAGE("                                                     ")
+
+
 # ┌──────────────────────────────────────────────────────────────────┐
 # │                       DEPENDENCIES                               │
 # └──────────────────────────────────────────────────────────────────┘
 
-IF(NOT USE_CRYPTO_SUBMODULE)
-
-include(FetchContent)
-
-    # mbedcrypto
-    FetchContent_Declare(
-        mbedcrypto
-        GIT_REPOSITORY ${MBEDCRYPTO_REPOSITORY}
-        GIT_TAG        ${MBEDCRYPTO_TAG}
-    )
-
-    SET(MBEDCRYPTO_FOLDER_PREFIX "Dependencies/mbedcrypto" CACHE STRING "")
-
-    SET(FETCHCONTENT_UPDATES_DISCONNECTED ON)
-    SET(FETCHCONTENT_QUIET OFF)
-
-    SET(MBEDTLS_BUILD_SHARED ${MBEDCRYPTO_BUILD_SHARED})
-    SET(MBEDTLS_LINK_WITH_PTHREAD ${MBEDCRYPTO_LINK_WITH_PTHREAD})
-    SET(MBEDTLS_UNSAFE_BUILD ${MBEDCRYPTO_UNSAFE_BUILD})
-
-    # Make all dependencies avaiables
-    FetchContent_MakeAvailable(mbedcrypto)
-
-ENDIF(NOT USE_CRYPTO_SUBMODULE)
-
-set(MBEDTLS_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(MBEDTLS_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE STRING "" FORCE)
 
 string(REGEX MATCH "Clang" CMAKE_COMPILER_IS_CLANG "${CMAKE_C_COMPILER_ID}")
 string(REGEX MATCH "GNU" CMAKE_COMPILER_IS_GNU "${CMAKE_C_COMPILER_ID}")
